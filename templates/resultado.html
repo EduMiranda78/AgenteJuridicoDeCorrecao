@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Resultado – Sanar Contábil</title>
+    <style>
+        :root {
+            --bg: #f5f7fa;
+            --card: #fff;
+            --accent: #0059f7;
+            --text: #222;
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Segoe UI", sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 2rem;
+        }
+
+        .card {
+            width: 720px;
+            max-width: 95vw;
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .08);
+            padding: 2rem;
+        }
+
+        h1 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .file {
+            color: var(--muted);
+            margin-bottom: 1.5rem;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: var(--radius);
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 1.5rem;
+            background: var(--accent);
+            color: #fff;
+            padding: .75rem 1.5rem;
+            border-radius: var(--radius);
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h1>Análise do contrato</h1>
+        <div class="file">Arquivo: {{ nome_arquivo }}</div>
+        <pre>{{ laudo }}</pre>
+        <a href="/">← Nova análise</a>
+    </div>
+</body>
+
+</html>
