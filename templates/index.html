@@ -1,222 +1,127 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auxiliar de Correção para Contratos | Sanar Contábil</title>
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-    <style>
-        :root {
-            --primary-color: #1a73e8;
-            --secondary-color: #2c3e50;
-            --success-color: #28a745;
-            --bg-color: #f0f2f5;
-            --card-bg: #ffffff;
-            --text-main: #333333;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            padding: 40px 20px;
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .header h1 {
-            color: var(--secondary-color);
-            font-size: 2.2rem;
-            margin-bottom: 5px;
-        }
-
-        .main-card {
-            background: var(--card-bg);
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-        }
-
-        .upload-section {
-            border: 2px dashed #cbd5e0;
-            background: #f8fafc;
-            padding: 30px;
-            border-radius: 10px;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .actions {
-            display: flex;
-            justify-content: center;
-        }
-
-        .btn {
-            padding: 18px 40px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: white;
-            text-align: center;
-        }
-
-        .btn-gemini {
-            background-color: var(--primary-color);
-        }
-
-        .btn-copy {
-            background-color: var(--success-color);
-            padding: 10px 20px;
-            font-size: 0.9rem;
-            margin-bottom: 15px;
-        }
-
-        .btn:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-
-        .results-area {
-            margin-top: 40px;
-            border-top: 2px solid #edf2f7;
-            padding-top: 30px;
-        }
-
-        .results-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 10px;
-        }
-
-        #resultado-content {
-            background: #fdfdfd;
-            padding: 30px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 1.15rem;
-            color: #2d3748;
-            line-height: 1.8;
-        }
-
-        #resultado-content strong {
-            color: #1a202c;
-        }
-
-        #resultado-content blockquote {
-            border-left: 4px solid var(--primary-color);
-            margin: 0;
-            padding-left: 20px;
-            color: #4a5568;
-            font-style: italic;
-        }
-
-        #loader {
-            display: none;
-            text-align: center;
-            margin: 20px 0;
-            color: var(--primary-color);
-            font-weight: bold;
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 50px;
-            color: #888;
-            font-size: 0.9rem;
-        }
-    </style>
+    <meta name="description" content="Assistente interno para revisão de contratos com FastAPI e Google Gemini.">
+    <title>Agente Jurídico | Sanar Contábil</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
+    <script src="{{ url_for('static', path='app.js') }}" defer></script>
 </head>
 
 <body>
+    <div class="page-shell">
+        <header class="hero">
+            <div class="hero__content">
+                <span class="hero__eyebrow">Sanar Contábil S/C Ltda</span>
+                <h1>Agente Jurídico</h1>
+                <p class="hero__lead">
+                    Revisão assistida de contratos para identificar riscos, erros formais e cláusulas que precisam de redação mais clara.
+                </p>
+                <div class="hero__chips" aria-label="Recursos principais">
+                    <span>FastAPI</span>
+                    <span>Google Gemini</span>
+                    <span>DOC e DOCX</span>
+                    <span>Relatório copiável</span>
+                </div>
+            </div>
+        </header>
 
-    <div class="container">
-        <div class="header">
-            <h1>Auxiliar de Correção para Contratos</h1>
-            <p>Sanar Contábil S/C Ltda</p>
-        </div>
+        <main class="content">
+            {% if erro %}
+                <div class="alert" role="alert" aria-live="polite">
+                    {{ erro }}
+                </div>
+            {% endif %}
 
-        <div class="main-card">
-            <form action="/analisar" method="post" enctype="multipart/form-data" onsubmit="showLoading()">
-                <div class="upload-section">
-                    <strong>Selecione o arquivo do contrato (.docx)</strong><br><br>
-                    <input type="file" name="file" accept=".doc,.docx" required>
+            <section class="panel" aria-labelledby="analysis-title">
+                <div class="section-heading">
+                    <div>
+                        <h2 id="analysis-title">Analisar contrato</h2>
+                        <p>Envie um documento para gerar um relatório técnico seguindo o padrão definido pela Sanar Contábil.</p>
+                    </div>
+                    <span class="status-pill">Análise com Gemini</span>
                 </div>
 
-                <div class="actions">
-                    <button type="submit" name="engine" value="gemini" class="btn btn-gemini">
-                        Analisar com Gemini
-                    </button>
+                <div class="notice">
+                    <span class="notice__icon" aria-hidden="true">i</span>
+                    <div>
+                        <strong>Atenção à confidencialidade</strong>
+                        <p>
+                            O conteúdo do contrato será enviado à API do Google Gemini. Não envie documentos sem autorização ou com dados que não possam ser processados por serviço externo.
+                        </p>
+                    </div>
                 </div>
-            </form>
 
-            <div id="loader">⌛ Processando análise e redigindo cláusulas...</div>
+                <form
+                    action="{{ url_for('analisar') }}"
+                    method="post"
+                    enctype="multipart/form-data"
+                    data-analysis-form
+                >
+                    <label class="upload-zone" for="file">
+                        <span class="upload-zone__title">Selecione o contrato</span>
+                        <span class="upload-zone__description">
+                            Arquivos .doc ou .docx, com tamanho máximo de 10 MB.
+                        </span>
+                        <input
+                            class="file-control"
+                            type="file"
+                            name="file"
+                            id="file"
+                            accept=".doc,.docx"
+                            required
+                            data-file-input
+                        >
+                        <span class="file-meta" data-file-meta>Nenhum arquivo selecionado.</span>
+                    </label>
+
+                    <div class="submit-row">
+                        <p class="privacy-note">
+                            O relatório é um apoio operacional e deve ser conferido por profissional qualificado antes de qualquer alteração contratual ou decisão jurídica.
+                        </p>
+                        <button class="primary-button" type="submit" data-submit-button>
+                            Analisar com Gemini
+                        </button>
+                    </div>
+                </form>
+
+                <div class="loader" role="status" aria-live="polite" data-loader>
+                    <span class="loader__spinner" aria-hidden="true"></span>
+                    Processando o contrato e preparando o relatório.
+                </div>
+            </section>
 
             {% if resultado %}
-            <div class="results-area">
-                <div class="results-header">
-                    <h2>Relatório Técnico</h2>
-                    <button class="btn btn-copy" onclick="copyToClipboard()">📋 Copiar Resultado</button>
-                </div>
+                <section class="panel" id="relatorio" aria-labelledby="report-title">
+                    <div class="section-heading">
+                        <div>
+                            <h2 id="report-title">Relatório técnico</h2>
+                            <p>Revise todos os pontos antes de copiar sugestões para o contrato original.</p>
+                        </div>
+                        <div class="report-actions">
+                            <button class="secondary-button" type="button" data-copy-button>
+                                Copiar relatório
+                            </button>
+                        </div>
+                    </div>
 
-                <div id="resultado-content"></div>
-                <script id="raw-data" type="text/plain">{{ resultado | safe }}</script>
-            </div>
+                    <div class="report-meta">
+                        <span>Motor: {{ engine_usada }}</span>
+                        <span>Tempo: {{ tempo }} segundos</span>
+                    </div>
+
+                    <pre class="report-content" data-report-content>{{ resultado }}</pre>
+                </section>
             {% endif %}
-        </div>
+        </main>
 
-        <div class="footer">
-            &copy; 2024 Sanar Contábil S/C Ltda - Inteligência Documental
-        </div>
+        <footer class="footer">
+            <strong>Sanar Contábil S/C Ltda.</strong>
+            Ferramenta interna de apoio à revisão documental.
+        </footer>
     </div>
-
-    <script>
-        function showLoading() {
-            document.getElementById('loader').style.display = 'block';
-        }
-
-        window.onload = function () {
-            const rawData = document.getElementById('raw-data');
-            if (rawData) {
-                const content = rawData.textContent;
-                document.getElementById('resultado-content').innerHTML = marked.parse(content);
-            }
-        };
-
-        async function copyToClipboard() {
-            const rawText = document.getElementById('raw-data').textContent;
-            try {
-                await navigator.clipboard.writeText(rawText);
-                const btn = document.querySelector('.btn-copy');
-                const originalText = btn.innerText;
-                btn.innerText = "✅ Copiado!";
-                btn.style.backgroundColor = "#155724";
-
-                setTimeout(() => {
-                    btn.innerText = originalText;
-                    btn.style.backgroundColor = "";
-                }, 2000);
-            } catch (err) {
-                alert('Erro ao copiar: ' + err);
-            }
-        }
-    </script>
-
 </body>
 
 </html>
