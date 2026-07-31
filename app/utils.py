@@ -12,7 +12,11 @@ MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 
 
 def _extrair_docx(caminho: Path) -> str:
-    documento = Document(caminho)
+    try:
+        documento = Document(caminho)
+    except Exception as erro:
+        raise ValueError("Não foi possível ler o arquivo .docx enviado.") from erro
+
     partes: list[str] = []
 
     for paragrafo in documento.paragraphs:
@@ -37,13 +41,16 @@ def _extrair_doc(caminho: Path) -> str:
             "Converta o contrato para .docx ou instale essa dependência."
         )
 
-    resultado = subprocess.run(
-        [executavel, str(caminho)],
-        capture_output=True,
-        text=True,
-        timeout=30,
-        check=False,
-    )
+    try:
+        resultado = subprocess.run(
+            [executavel, str(caminho)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as erro:
+        raise ValueError("A extração do arquivo .doc excedeu o tempo permitido.") from erro
 
     if resultado.returncode != 0:
         raise ValueError("Não foi possível extrair o texto do arquivo .doc enviado.")
