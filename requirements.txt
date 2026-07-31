@@ -1,6 +1,7 @@
 fastapi
-uvicorn
+uvicorn[standard]
 jinja2
 python-docx
 google-generativeai
 python-multipart
+httpx
