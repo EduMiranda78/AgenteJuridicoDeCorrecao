@@ -40,9 +40,9 @@ def renderizar_index(
     engine_usada: str | None = None,
 ):
     return templates.TemplateResponse(
-        "index.html",
-        {
-            "request": request,
+        request=request,
+        name="index.html",
+        context={
             "resultado": resultado,
             "erro": erro,
             "tempo": tempo,
