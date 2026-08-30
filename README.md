@@ -287,7 +287,8 @@ Para uso interno em servidor:
 
 ## Autor
 
-Desenvolvido por [Eduardo Miranda](https://github.com/EduMiranda78) para uso interno da Sanar Contábil S/C Ltda.
+Desenvolvido por [Eduardo Miranda](https://github.com/EduMiranda78) para uso interno da Sanar Contábil S/C Ltda.  
+Site: [Miranda Stack](https://mirandastack.com/)
 
 ## Licença
 
