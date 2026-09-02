@@ -1,12 +1,12 @@
 <div align="center">
 
-# Agente Jurídico
+# Assistente de Revisão Contratual
 
-Ferramenta interna em FastAPI para revisar contratos com apoio do Google Gemini e produzir relatórios estruturados para a Sanar Contábil S/C Ltda.
+Ferramenta interna em FastAPI para revisar contratos com apoio do B.AI e produzir relatórios estruturados para a Sanar Contábil S/C Ltda.
 
 ![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi&logoColor=white)
-![Gemini](https://img.shields.io/badge/Google-Gemini-2447A8?logo=google&logoColor=white)
+![B.AI](https://img.shields.io/badge/IA-B.AI-2447A8)
 ![Tests](https://img.shields.io/badge/Testes-unittest-147A52)
 
 </div>
@@ -15,12 +15,13 @@ Ferramenta interna em FastAPI para revisar contratos com apoio do Google Gemini 
 
 ## Visão geral
 
-O Agente Jurídico recebe contratos em `.doc` ou `.docx`, extrai o texto e envia o conteúdo à API do Google Gemini. O modelo segue um prompt interno para produzir quatro blocos:
+O Assistente de Revisão Contratual recebe contratos em `.doc` ou `.docx`, extrai o texto e envia o conteúdo à API do B.AI. O modelo segue um prompt interno para produzir quatro blocos:
 
 1. riscos jurídicos;
 2. erros formais;
 3. cláusulas revisadas;
-4. pontos para validação humana.
+4. pontos para validação humana;
+5. contrato corrigido integral.
 
 A interface permite copiar o relatório em texto simples, reduzindo o risco de execução de HTML retornado pelo modelo.
 
@@ -30,7 +31,7 @@ A interface permite copiar o relatório em texto simples, reduzindo o risco de e
 - Limite de arquivo de 10 MB.
 - Extração de parágrafos e tabelas de arquivos DOCX.
 - Suporte opcional a arquivos DOC por meio do `antiword`.
-- Análise com Google Gemini.
+- Análise com B.AI.
 - Modelo configurável por variável de ambiente.
 - Relatório estruturado conforme o padrão da Sanar Contábil.
 - Botão para copiar o conteúdo do relatório.
@@ -44,7 +45,7 @@ A interface permite copiar o relatório em texto simples, reduzindo o risco de e
 
 ## Aviso de confidencialidade
 
-O texto do contrato é enviado para um serviço externo, o Google Gemini. Antes de usar a aplicação, confirme:
+O texto do contrato é enviado para um serviço externo, o B.AI. Antes de usar a aplicação, confirme:
 
 - autorização para processar o documento em serviço de IA;
 - regras internas de confidencialidade e proteção de dados;
@@ -55,7 +56,7 @@ Não exponha esta aplicação publicamente sem autenticação, HTTPS, controle d
 
 ## Segurança da chave de API
 
-A chave do Gemini deve existir somente como variável de ambiente no servidor.
+A chave da B.AI deve existir somente como variável de ambiente no servidor.
 
 Se uma chave já foi gravada em um commit, removê-la do arquivo atual não é suficiente. A chave continua no histórico Git e precisa ser revogada no Google, com emissão de uma nova credencial.
 
@@ -68,7 +69,7 @@ Nunca publique a nova chave no repositório, em prints, logs, issues ou pull req
 - Uvicorn
 - Jinja2
 - python-docx
-- Google Generative AI SDK
+- B.AI API
 - python-multipart
 - HTML, CSS e JavaScript
 
@@ -102,7 +103,7 @@ agente_juridico/
 
 - Python 3.12 ou superior
 - `pip`
-- Chave válida da API do Google Gemini
+- Chave válida da API do B.AI
 - `antiword`, somente para contratos antigos no formato `.doc`
 
 No Debian e Ubuntu, o suporte a `.doc` pode ser instalado com:
@@ -150,21 +151,21 @@ A aplicação lê estas variáveis:
 
 | Variável | Obrigatória | Padrão | Finalidade |
 | --- | --- | --- | --- |
-| `GOOGLE_API_KEY` | Sim | Nenhum | Autenticação na API do Gemini |
-| `GEMINI_MODEL` | Não | `gemini-2.5-flash` | Modelo usado para gerar o relatório |
+| `BAI_API_KEY` | Sim | Nenhum | Autenticação na API da B.AI |
+| `BAI_MODEL` | Não | `qwen3.8-flash` | Modelo usado para gerar o relatório |
 
 Exporte as variáveis no Linux:
 
 ```bash
-export GOOGLE_API_KEY="sua_nova_chave_do_gemini"
-export GEMINI_MODEL="gemini-2.5-flash"
+export BAI_API_KEY="sua_chave_da_bai"
+export BAI_MODEL="qwen3.8-flash"
 ```
 
 No Windows PowerShell:
 
 ```powershell
-$env:GOOGLE_API_KEY="sua_nova_chave_do_gemini"
-$env:GEMINI_MODEL="gemini-2.5-flash"
+$env:BAI_API_KEY="sua_chave_da_bai"
+$env:BAI_MODEL="qwen3.8-flash"
 ```
 
 O arquivo `.env.example` serve apenas como referência. A aplicação não carrega arquivos `.env` automaticamente. Use variáveis do sistema, do serviço ou do contêiner.
@@ -194,7 +195,7 @@ Não use `--reload` em produção.
 1. Abra a página inicial.
 2. Leia o aviso de confidencialidade.
 3. Selecione um contrato `.doc` ou `.docx` de até 10 MB.
-4. Clique em **Analisar com Gemini**.
+4. Clique em **Analisar contrato**.
 5. Revise riscos, erros formais, cláusulas sugeridas e pontos para validação humana.
 6. Use **Copiar relatório** somente depois da conferência.
 
@@ -233,7 +234,7 @@ Os testes cobrem:
 - entrega dos arquivos estáticos;
 - healthcheck;
 - rejeição de extensões não permitidas;
-- processamento de DOCX sem acesso ao Gemini;
+- processamento de DOCX sem acesso à B.AI;
 - escape de HTML retornado pelo modelo;
 - cabeçalhos HTTP de segurança.
 
@@ -241,14 +242,14 @@ O workflow `.github/workflows/tests.yml` executa a mesma suíte em pushes para `
 
 ## Proteções aplicadas
 
-- A chave do Gemini não fica no código.
+- A chave da B.AI não fica no código.
 - O nome original do upload não é usado como caminho no servidor.
 - Arquivos temporários são removidos após a extração.
 - Uploads acima de 10 MB são recusados.
 - O formato do arquivo é validado antes da leitura.
 - O processamento de `.doc` possui limite de tempo.
 - Erros internos são registrados no servidor sem detalhes técnicos na página.
-- O conteúdo produzido pelo Gemini é exibido como texto escapado.
+- O conteúdo produzido pela B.AI é exibido como texto escapado.
 - A política de conteúdo permite apenas recursos locais.
 - As páginas não devem ser armazenadas em cache.
 - A aplicação solicita que mecanismos de busca não indexem o conteúdo.
@@ -283,7 +284,7 @@ Para uso interno em servidor:
 - Métricas de uso e falhas.
 - Containerização com Docker.
 - Configuração pronta para Nginx e serviço `systemd`.
-- Migração para o SDK mais recente do Google quando planejada e testada.
+- Acesso privado pela rede Tailscale.
 
 ## Autor
 

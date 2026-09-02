@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Assistente interno para revisão de contratos com FastAPI e Google Gemini.">
-    <title>Agente Jurídico | Sanar Contábil</title>
+    <meta name="description" content="Assistente interno da Sanar Contábil para revisão de contratos.">
+    <title>Assistente de Revisão Contratual | Sanar Contábil</title>
     <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
     <script src="{{ url_for('static', path='app.js') }}" defer></script>
 </head>
@@ -15,14 +15,14 @@
         <header class="hero">
             <div class="hero__content">
                 <span class="hero__eyebrow">Sanar Contábil S/C Ltda</span>
-                <h1>Agente Jurídico</h1>
+                <h1>Assistente de Revisão Contratual</h1>
                 <p class="hero__lead">
                     Revisão assistida de contratos para identificar riscos, erros formais e cláusulas que precisam de redação mais clara.
                 </p>
                 <div class="hero__chips" aria-label="Recursos principais">
-                    <span>FastAPI</span>
-                    <span>Google Gemini</span>
                     <span>DOC e DOCX</span>
+                    <span>Até 10 MB</span>
+                    <span>Revisão humana obrigatória</span>
                     <span>Relatório copiável</span>
                 </div>
             </div>
@@ -41,7 +41,7 @@
                         <h2 id="analysis-title">Analisar contrato</h2>
                         <p>Envie um documento para gerar um relatório técnico seguindo o padrão definido pela Sanar Contábil.</p>
                     </div>
-                    <span class="status-pill">Análise com Gemini</span>
+                    <span class="status-pill">Uso interno</span>
                 </div>
 
                 <div class="notice">
@@ -49,7 +49,7 @@
                     <div>
                         <strong>Atenção à confidencialidade</strong>
                         <p>
-                            O conteúdo do contrato será enviado à API do Google Gemini. Não envie documentos sem autorização ou com dados que não possam ser processados por serviço externo.
+                            O conteúdo do contrato será processado por um serviço externo de inteligência artificial. Envie somente documentos autorizados para análise interna.
                         </p>
                     </div>
                 </div>
@@ -77,12 +77,17 @@
                         <span class="file-meta" data-file-meta>Nenhum arquivo selecionado.</span>
                     </label>
 
+                    <label class="confirmation">
+                        <input type="checkbox" name="confirmacao" value="confirmado" required>
+                        <span>Confirmo que este documento está autorizado para análise interna e será revisado antes de qualquer decisão.</span>
+                    </label>
+
                     <div class="submit-row">
                         <p class="privacy-note">
                             O relatório é um apoio operacional e deve ser conferido por profissional qualificado antes de qualquer alteração contratual ou decisão jurídica.
                         </p>
                         <button class="primary-button" type="submit" data-submit-button>
-                            Analisar com Gemini
+                            Analisar contrato
                         </button>
                     </div>
                 </form>
@@ -104,6 +109,9 @@
                             <button class="secondary-button" type="button" data-copy-button>
                                 Copiar relatório
                             </button>
+                            <a class="secondary-button secondary-link" href="/">
+                                Nova análise
+                            </a>
                         </div>
                     </div>
 

@@ -26,6 +26,13 @@ ESTRUTURA OBRIGATÓRIA
 - Liste informações ausentes, anexos não fornecidos, referências legais que precisam ser confirmadas e decisões que dependem do contexto das partes.
 - Se não houver pontos adicionais, escreva: "Nenhum ponto adicional identificado."
 
+5. CONTRATO CORRIGIDO INTEGRAL
+- Apresente o contrato completo com as correções formais e as redações sugeridas incorporadas.
+- Preserve a estrutura, a numeração, os nomes, as datas, os valores e as obrigações que não exigem correção.
+- Não suprima cláusulas nem crie obrigações sem necessidade.
+- Quando uma alteração depender de decisão das partes, mantenha o texto original e insira imediatamente após o trecho a marcação: [VALIDAR: motivo objetivo].
+- O texto deve ficar pronto para copiar e submeter à revisão humana final.
+
 REGRAS
 - Não invente leis, artigos, jurisprudência, datas, valores, obrigações ou fatos.
 - Não trate uma hipótese como fato confirmado.
@@ -35,6 +42,7 @@ REGRAS
 - Não use preâmbulos como "Aqui está sua análise".
 - Não explique conceitos jurídicos sem necessidade.
 - Mantenha linguagem formal, clara e objetiva.
+- Não resuma o contrato na seção 5. Reproduza integralmente o conteúdo corrigido.
 
 CONTRATO PARA ANÁLISE
 

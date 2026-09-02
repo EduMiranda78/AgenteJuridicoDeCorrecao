@@ -33,5 +33,5 @@ jobs:
 
       - name: Executar testes
         env:
-          GOOGLE_API_KEY: ""
+          BAI_API_KEY: ""
         run: python -m unittest discover -s tests -v

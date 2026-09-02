@@ -25,7 +25,7 @@ class AgenteJuridicoAppTestCase(unittest.TestCase):
     def test_pagina_inicial_e_estilos_respondem(self):
         resposta = self.client.get("/")
         self.assertEqual(resposta.status_code, 200)
-        self.assertIn("Agente Jurídico".encode("utf-8"), resposta.content)
+        self.assertIn("Assistente de Revisão Contratual".encode("utf-8"), resposta.content)
         self.assertIn(b"/static/styles.css", resposta.content)
 
         estilos = self.client.get("/static/styles.css")
@@ -41,6 +41,7 @@ class AgenteJuridicoAppTestCase(unittest.TestCase):
         resposta = self.client.post(
             "/analisar",
             files={"file": ("contrato.txt", b"conteudo", "text/plain")},
+            data={"confirmacao": "confirmado"},
         )
         self.assertEqual(resposta.status_code, 400)
         self.assertIn("formatos .doc ou .docx".encode("utf-8"), resposta.content)
@@ -48,7 +49,7 @@ class AgenteJuridicoAppTestCase(unittest.TestCase):
     def test_processa_docx_sem_chamar_servico_externo(self):
         with patch.object(
             agente,
-            "analisar_gemini",
+            "analisar_bai",
             return_value="1. RISCOS JURÍDICOS\nNenhum risco crítico identificado.",
         ):
             resposta = self.client.post(
@@ -60,6 +61,7 @@ class AgenteJuridicoAppTestCase(unittest.TestCase):
                         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                     )
                 },
+                data={"confirmacao": "confirmado"},
             )
 
         self.assertEqual(resposta.status_code, 200)
@@ -69,7 +71,7 @@ class AgenteJuridicoAppTestCase(unittest.TestCase):
     def test_escapa_html_retornado_pela_ia(self):
         with patch.object(
             agente,
-            "analisar_gemini",
+            "analisar_bai",
             return_value="<script>alert('teste')</script>",
         ):
             resposta = self.client.post(
@@ -81,11 +83,26 @@ class AgenteJuridicoAppTestCase(unittest.TestCase):
                         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                     )
                 },
+                data={"confirmacao": "confirmado"},
             )
 
         self.assertEqual(resposta.status_code, 200)
         self.assertIn(b"&lt;script&gt;alert", resposta.content)
         self.assertNotIn(b"<script>alert('teste')</script>", resposta.content)
+
+    def test_exige_confirmacao_para_analisar(self):
+        resposta = self.client.post(
+            "/analisar",
+            files={
+                "file": (
+                    "contrato.docx",
+                    self.contrato_docx(),
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                )
+            },
+        )
+
+        self.assertEqual(resposta.status_code, 422)
 
     def test_respostas_possuem_cabecalhos_de_seguranca(self):
         resposta = self.client.get("/")

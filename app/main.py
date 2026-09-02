@@ -4,12 +4,12 @@ import logging
 import time
 from pathlib import Path
 
-from fastapi import FastAPI, File, Request, UploadFile, status
+from fastapi import FastAPI, File, Form, Request, UploadFile, status
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app.agent import AgentConfigurationError, AgenteJuridico
+from app.agent import AgentConfigurationError, AgentServiceError, AgenteJuridico
 from app.utils import extract_text_from_doc
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -84,19 +84,31 @@ async def index(request: Request):
 
 
 @app.post("/analisar", response_class=HTMLResponse, name="analisar")
-async def analisar(request: Request, file: UploadFile = File(...)):
+async def analisar(
+    request: Request,
+    file: UploadFile = File(...),
+    confirmacao: str = Form(...),
+):
     inicio = time.monotonic()
+
+    if confirmacao != "confirmado":
+        await file.close()
+        return renderizar_index(
+            request,
+            status_code=status.HTTP_400_BAD_REQUEST,
+            erro="Confirme a autorização para analisar o documento.",
+        )
 
     try:
         conteudo = extract_text_from_doc(file)
-        resultado = agente.analisar_gemini(conteudo)
+        resultado = await agente.analisar_bai(conteudo)
         tempo_total = round(time.monotonic() - inicio, 2)
 
         return renderizar_index(
             request,
             resultado=resultado,
             tempo=tempo_total,
-            engine_usada="GEMINI",
+            engine_usada=f"B.AI / {agente.model_name}",
         )
     except ValueError as erro:
         return renderizar_index(
@@ -105,11 +117,18 @@ async def analisar(request: Request, file: UploadFile = File(...)):
             erro=str(erro),
         )
     except AgentConfigurationError:
-        logger.error("GOOGLE_API_KEY não configurada no servidor")
+        logger.error("A configuração da B.AI não está disponível ou foi recusada")
         return renderizar_index(
             request,
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            erro="O serviço de análise não está configurado. Verifique a chave do Gemini no servidor.",
+            erro="O serviço de análise não está configurado. Verifique a chave da B.AI no servidor.",
+        )
+    except AgentServiceError as erro:
+        logger.warning("Falha controlada na B.AI: %s", erro)
+        return renderizar_index(
+            request,
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            erro=str(erro),
         )
     except Exception:
         logger.exception("Falha inesperada durante a análise do contrato")

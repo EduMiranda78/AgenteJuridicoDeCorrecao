@@ -1,15 +1,22 @@
 from __future__ import annotations
 
 import os
+from typing import Any
 
-import google.generativeai as genai
+import httpx
 
 
 class AgentConfigurationError(RuntimeError):
     """Indica que o agente não possui configuração suficiente para executar."""
 
 
+class AgentServiceError(RuntimeError):
+    """Indica uma falha controlada no provedor de inteligência artificial."""
+
+
 class AgenteJuridico:
+    API_URL = "https://api.b.ai/v1/chat/completions"
+
     def __init__(
         self,
         system_prompt: str,
@@ -17,32 +24,78 @@ class AgenteJuridico:
         model_name: str | None = None,
     ) -> None:
         self.system_prompt = system_prompt
-        self.api_key = api_key or os.getenv("GOOGLE_API_KEY")
-        self.model_name = model_name or os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
-        self._model = None
+        self.api_key = api_key or os.getenv("BAI_API_KEY")
+        self.model_name = model_name or os.getenv("BAI_MODEL", "qwen3.8-flash")
 
-    def _obter_modelo(self):
-        if not self.api_key:
-            raise AgentConfigurationError(
-                "A variável GOOGLE_API_KEY não foi configurada no servidor."
-            )
+    @staticmethod
+    def _extrair_conteudo(dados: dict[str, Any]) -> str:
+        try:
+            conteudo = dados["choices"][0]["message"]["content"]
+        except (KeyError, IndexError, TypeError) as erro:
+            raise AgentServiceError(
+                "A B.AI retornou uma resposta em formato inesperado."
+            ) from erro
 
-        if self._model is None:
-            genai.configure(api_key=self.api_key)
-            self._model = genai.GenerativeModel(self.model_name)
+        if not isinstance(conteudo, str) or not conteudo.strip():
+            raise AgentServiceError("A B.AI não retornou conteúdo para o contrato.")
 
-        return self._model
+        return conteudo.strip()
 
-    def analisar_gemini(self, texto: str) -> str:
+    async def analisar_bai(self, texto: str) -> str:
         texto = texto.strip()
         if not texto:
             raise ValueError("O contrato não contém texto legível para análise.")
 
+        if not self.api_key:
+            raise AgentConfigurationError(
+                "A variável BAI_API_KEY não foi configurada no servidor."
+            )
+
         prompt_final = self.system_prompt.format(texto_do_contrato=texto)
-        resposta = self._obter_modelo().generate_content(prompt_final)
-        conteudo = getattr(resposta, "text", "").strip()
+        timeout = httpx.Timeout(connect=10.0, read=180.0, write=30.0, pool=10.0)
 
-        if not conteudo:
-            raise RuntimeError("O Gemini não retornou conteúdo para o contrato enviado.")
+        try:
+            async with httpx.AsyncClient(timeout=timeout) as cliente:
+                resposta = await cliente.post(
+                    self.API_URL,
+                    headers={
+                        "Authorization": f"Bearer {self.api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json={
+                        "model": self.model_name,
+                        "messages": [{"role": "user", "content": prompt_final}],
+                        "stream": False,
+                        "temperature": 0.1,
+                        "max_tokens": 8000,
+                    },
+                )
+        except httpx.TimeoutException as erro:
+            raise AgentServiceError(
+                "A análise excedeu o tempo permitido. Tente novamente."
+            ) from erro
+        except httpx.RequestError as erro:
+            raise AgentServiceError(
+                "Não foi possível comunicar com a B.AI. Tente novamente."
+            ) from erro
 
-        return conteudo
+        if resposta.status_code == 401:
+            raise AgentConfigurationError("A chave da B.AI foi recusada.")
+        if resposta.status_code == 429:
+            raise AgentServiceError(
+                "O limite de uso da conta B.AI foi atingido. Tente novamente mais tarde."
+            )
+        if resposta.status_code >= 500:
+            raise AgentServiceError(
+                "A B.AI está temporariamente indisponível. Tente novamente."
+            )
+
+        try:
+            resposta.raise_for_status()
+            dados = resposta.json()
+        except (httpx.HTTPStatusError, ValueError) as erro:
+            raise AgentServiceError(
+                "A B.AI recusou a solicitação ou retornou uma resposta inválida."
+            ) from erro
+
+        return self._extrair_conteudo(dados)
