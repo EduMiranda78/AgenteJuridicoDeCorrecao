@@ -90,19 +90,25 @@ class AgenteJuridicoAppTestCase(unittest.TestCase):
         self.assertIn(b"&lt;script&gt;alert", resposta.content)
         self.assertNotIn(b"<script>alert('teste')</script>", resposta.content)
 
-    def test_exige_confirmacao_para_analisar(self):
-        resposta = self.client.post(
-            "/analisar",
-            files={
-                "file": (
-                    "contrato.docx",
-                    self.contrato_docx(),
-                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                )
-            },
-        )
+    def test_nao_exige_confirmacao_para_analisar(self):
+        with patch.object(
+            agente,
+            "analisar_bai",
+            return_value="Relatório sem confirmação.",
+        ):
+            resposta = self.client.post(
+                "/analisar",
+                files={
+                    "file": (
+                        "contrato.docx",
+                        self.contrato_docx(),
+                        "application/vnd.openxmlformats-officedocument."
+                        "wordprocessingml.document",
+                    )
+                },
+            )
 
-        self.assertEqual(resposta.status_code, 422)
+        self.assertEqual(resposta.status_code, 200)
 
     def test_respostas_possuem_cabecalhos_de_seguranca(self):
         resposta = self.client.get("/")

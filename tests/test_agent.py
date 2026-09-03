@@ -1,3 +1,4 @@
+import json
 import unittest
 from unittest.mock import patch
 
@@ -14,6 +15,12 @@ class RespostaFake:
         self._dados = dados or {
             "choices": [{"message": {"content": "Relatório B.AI simulado."}}]
         }
+
+        self.text = (
+            "data: "
+            + json.dumps(self._dados, ensure_ascii=False)
+            + "\n\ndata: [DONE]\n"
+        )
 
     def raise_for_status(self):
         return None
@@ -51,7 +58,7 @@ class AgenteJuridicoTestCase(unittest.IsolatedAsyncioTestCase):
             resultado = await agente.analisar_bai("Contrato fictício")
 
         self.assertEqual(resultado, "Relatório B.AI simulado.")
-        self.assertEqual(cliente.chamada["json"]["stream"], False)
+        self.assertEqual(cliente.chamada["json"]["stream"], True)
         self.assertEqual(cliente.chamada["json"]["temperature"], 0.1)
         self.assertIn("Contrato fictício", cliente.chamada["json"]["messages"][0]["content"])
         self.assertEqual(

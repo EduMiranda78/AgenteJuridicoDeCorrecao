@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 from typing import Any
 
@@ -41,6 +42,47 @@ class AgenteJuridico:
 
         return conteudo.strip()
 
+    @staticmethod
+    def _extrair_stream(corpo: str) -> str:
+        fragmentos: list[str] = []
+
+        for linha in corpo.splitlines():
+            linha = linha.strip()
+
+            if not linha or linha.startswith(":"):
+                continue
+
+            if linha.startswith("data:"):
+                linha = linha[5:].strip()
+
+            if linha == "[DONE]":
+                break
+
+            try:
+                dados = json.loads(linha)
+                escolha = dados["choices"][0]
+            except (json.JSONDecodeError, KeyError, IndexError, TypeError):
+                continue
+
+            delta = escolha.get("delta") or {}
+            conteudo = delta.get("content")
+
+            if not isinstance(conteudo, str):
+                mensagem = escolha.get("message") or {}
+                conteudo = mensagem.get("content")
+
+            if isinstance(conteudo, str):
+                fragmentos.append(conteudo)
+
+        resultado = "".join(fragmentos).strip()
+
+        if not resultado:
+            raise AgentServiceError(
+                "A B.AI não retornou conteúdo para o contrato."
+            )
+
+        return resultado
+
     async def analisar_bai(self, texto: str) -> str:
         texto = texto.strip()
         if not texto:
@@ -52,7 +94,7 @@ class AgenteJuridico:
             )
 
         prompt_final = self.system_prompt.format(texto_do_contrato=texto)
-        timeout = httpx.Timeout(connect=10.0, read=180.0, write=30.0, pool=10.0)
+        timeout = httpx.Timeout(connect=10.0, read=600.0, write=30.0, pool=10.0)
 
         try:
             async with httpx.AsyncClient(timeout=timeout) as cliente:
@@ -65,7 +107,7 @@ class AgenteJuridico:
                     json={
                         "model": self.model_name,
                         "messages": [{"role": "user", "content": prompt_final}],
-                        "stream": False,
+                        "stream": True,
                         "temperature": 0.1,
                         "max_tokens": 8000,
                     },
@@ -92,10 +134,9 @@ class AgenteJuridico:
 
         try:
             resposta.raise_for_status()
-            dados = resposta.json()
-        except (httpx.HTTPStatusError, ValueError) as erro:
+            return self._extrair_stream(resposta.text)
+        except httpx.HTTPStatusError as erro:
             raise AgentServiceError(
-                "A B.AI recusou a solicitação ou retornou uma resposta inválida."
+                "A B.AI recusou a solicitação ou retornou "
+                "uma resposta inválida."
             ) from erro
-
-        return self._extrair_conteudo(dados)

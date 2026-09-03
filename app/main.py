@@ -87,17 +87,8 @@ async def index(request: Request):
 async def analisar(
     request: Request,
     file: UploadFile = File(...),
-    confirmacao: str = Form(...),
 ):
     inicio = time.monotonic()
-
-    if confirmacao != "confirmado":
-        await file.close()
-        return renderizar_index(
-            request,
-            status_code=status.HTTP_400_BAD_REQUEST,
-            erro="Confirme a autorização para analisar o documento.",
-        )
 
     try:
         conteudo = extract_text_from_doc(file)

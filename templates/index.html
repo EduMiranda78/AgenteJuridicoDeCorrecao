@@ -44,16 +44,6 @@
                     <span class="status-pill">Uso interno</span>
                 </div>
 
-                <div class="notice">
-                    <span class="notice__icon" aria-hidden="true">i</span>
-                    <div>
-                        <strong>Atenção à confidencialidade</strong>
-                        <p>
-                            O conteúdo do contrato será processado por um serviço externo de inteligência artificial. Envie somente documentos autorizados para análise interna.
-                        </p>
-                    </div>
-                </div>
-
                 <form
                     action="{{ url_for('analisar') }}"
                     method="post"
@@ -75,11 +65,6 @@
                             data-file-input
                         >
                         <span class="file-meta" data-file-meta>Nenhum arquivo selecionado.</span>
-                    </label>
-
-                    <label class="confirmation">
-                        <input type="checkbox" name="confirmacao" value="confirmado" required>
-                        <span>Confirmo que este documento está autorizado para análise interna e será revisado antes de qualquer decisão.</span>
                     </label>
 
                     <div class="submit-row">
